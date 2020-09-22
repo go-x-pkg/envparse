@@ -8,7 +8,7 @@ import (
 	"github.com/go-x-pkg/envparse"
 )
 
-func TestParse(t *testing.T) {
+func TestEnv(t *testing.T) {
 	tests := []struct {
 		raw string
 
@@ -16,13 +16,13 @@ func TestParse(t *testing.T) {
 		werr error
 	}{
 		{
-			`foo=bar  myDog=Rex\ The\ Dog   mycat="dqwdqwd dwqdqdwq " bar=d12`,
+			`foo="bar" myDog=Rex\ The\ Dog mycat="dqwdqwd dwqdqdwq " bar="d12"`,
 
 			envparse.Env{
-				"foo":   []string{`bar`},
-				"myDog": []string{`Rex\ The\ Dog`},
-				"mycat": []string{`dqwdqwd dwqdqdwq `},
-				"bar":   []string{`d12`},
+				"foo":   `bar`,
+				"myDog": `Rex The Dog`,
+				"mycat": `dqwdqwd dwqdqdwq `,
+				"bar":   `d12`,
 			},
 			nil,
 		},
@@ -30,8 +30,8 @@ func TestParse(t *testing.T) {
 			`LD_LIBRARY_PATH=/usr/lib:/usr/nvidia/cuda/lib64 PATH=/usr/bin`,
 
 			envparse.Env{
-				"LD_LIBRARY_PATH": []string{`/usr/lib:/usr/nvidia/cuda/lib64`},
-				"PATH":            []string{`/usr/bin`},
+				"LD_LIBRARY_PATH": `/usr/lib:/usr/nvidia/cuda/lib64`,
+				"PATH":            `/usr/bin`,
 			},
 			nil,
 		},
@@ -39,7 +39,7 @@ func TestParse(t *testing.T) {
 			`LD_LIBRARY_PATH /usr/lib:/usr/nvidia/cuda/lib64`,
 
 			envparse.Env{
-				"LD_LIBRARY_PATH": []string{`/usr/lib:/usr/nvidia/cuda/lib64`},
+				"LD_LIBRARY_PATH": `/usr/lib:/usr/nvidia/cuda/lib64`,
 			},
 			nil,
 		},
@@ -57,6 +57,13 @@ func TestParse(t *testing.T) {
 			nil,
 			envparse.ErrMissingEqualsSign,
 		},
+
+		{
+			``,
+
+			nil,
+			nil,
+		},
 	}
 
 	for i, tt := range tests {
@@ -68,7 +75,23 @@ func TestParse(t *testing.T) {
 			}
 
 			if eq := reflect.DeepEqual(env, tt.wEnv); !eq {
-				t.Errorf("#%d: got = %v, want %v", i, env, tt.wEnv)
+				t.Errorf("#%d: got = %#v, want %#v", i, env, tt.wEnv)
+			}
+
+			if err == nil {
+				raw := env.String()
+
+				t.Logf("#%d: string: %s\n", i, raw)
+
+				envOther, err := envparse.Parse(raw)
+
+				if err != nil {
+					t.Errorf("#%d: err = %v, want %v", i, err, nil)
+				}
+
+				if eq := reflect.DeepEqual(env, envOther); !eq {
+					t.Errorf("#%d: got = %v, want %v", i, env, envOther)
+				}
 			}
 		}()
 	}

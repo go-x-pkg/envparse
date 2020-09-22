@@ -156,7 +156,12 @@ func parseRaw(raw string, d *Directives, cb func(string, string)) error {
 	preCb := func(key, value string) {
 		value = strings.Trim(value, `"`)
 		value = strings.Trim(value, `'`)
+		value = strings.Replace(value, `\ `, " ", -1)
 		cb(key, value)
+	}
+
+	if len(raw) == 0 {
+		return nil
 	}
 
 	words := parseWords(raw, d)
