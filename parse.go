@@ -160,7 +160,7 @@ func parseRaw(raw string, d *Directives, cb func(string, string)) error {
 		cb(key, value)
 	}
 
-	if len(raw) == 0 {
+	if raw == "" {
 		return nil
 	}
 

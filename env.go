@@ -45,7 +45,7 @@ func (e Env) String() string {
 // Parse parses raw key=value
 // pairs into Env(some sort of url.Values)
 func Parse(raw string) (Env, error) {
-	if len(raw) == 0 {
+	if raw == "" {
 		return nil, nil
 	}
 
